@@ -46,7 +46,7 @@ const hasStatusProperty = (requestQuery) => {
 app.get("/users/", async (request, response) => {
   let data = null;
   let getUsersQuery = "";
-  const { search_q = "", priority, status } = request.query;
+  const { search_q = "", first_name, last_name } = request.query;
 
   switch (true) {
     case hasPriorityAndStatusProperties(request.query):
@@ -57,8 +57,8 @@ app.get("/users/", async (request, response) => {
         user
       WHERE
         user LIKE '%${search_q}%'
-        AND status = '${status}'
-        AND priority = '${priority}';`;
+        AND first_name = '${first_name}'
+        AND last_name = '${las}';`;
       break;
     case hasPriorityProperty(request.query):
       getUsersQuery = `
@@ -67,8 +67,7 @@ app.get("/users/", async (request, response) => {
       FROM
         user
       WHERE
-        user LIKE '%${search_q}%'
-        AND priority = '${priority}';`;
+        user LIKE '%${search_q}%'`;
       break;
     case hasStatusProperty(request.query):
       getUsesQuery = `
@@ -78,7 +77,7 @@ app.get("/users/", async (request, response) => {
         user
       WHERE
         user LIKE '%${search_q}%'
-        AND status = '${status}';`;
+        AND age = '${age}';`;
       break;
     default:
       getUsersQuery = `
@@ -109,29 +108,29 @@ app.get("/users/:usersId/", async (request, response) => {
 });
 
 app.post("/users/", async (request, response) => {
-  const { id, user, priority, status } = request.body;
+  const { id, first_name, last_name, company_name,city,state,zip,email, web, age } = request.body;
   const postUserQuery = `
   INSERT INTO
-    user (id, user, priority, status)
+    user (id, first_name, last_name, company_name,city,state,zip,email, web, age)
   VALUES
-    (${id}, '${user}', '${priority}', '${status}');`;
+    (${id}, '${first_name}', '${last_name}','${company_name}', '${city}','${state}','${zip}','${email}','${web}','${age}');`;
   await database.run(postUserQuery);
   response.send("User Successfully Added");
 });
 
-app.put("/users/:usersId/", async (request, response) => {
-  const { userId } = request.params;
+app.put("/users/:Id/", async (request, response) => {
+  const { Id } = request.params;
   let updateColumn = "";
   const requestBody = request.body;
   switch (true) {
     case requestBody.status !== undefined:
-      updateColumn = "Status";
+      updateColumn = "first_name";
       break;
     case requestBody.priority !== undefined:
-      updateColumn = "Priority";
+      updateColumn = "last_name";
       break;
-    case requestBody.todo !== undefined:
-      updateColumn = "User";
+    case requestBody.user !== undefined:
+      updateColumn = "age";
       break;
   }
   const previousUserQuery = `
@@ -140,7 +139,7 @@ app.put("/users/:usersId/", async (request, response) => {
     FROM
       user
     WHERE 
-      id = ${userId};`;
+      id = ${Id};`;
   const previousUser = await database.get(previousUserQuery);
 
   const {
@@ -157,19 +156,19 @@ app.put("/users/:usersId/", async (request, response) => {
       priority='${priority}',
       status='${status}'
     WHERE
-      id = ${userId};`;
+      id = ${Id};`;
 
   await database.run(updateUserQuery);
   response.send(`${updateColumn} Updated`);
 });
 
 app.delete("/users/:userId/", async (request, response) => {
-  const { userId } = request.params;
+  const { Id } = request.params;
   const deleteUserQuery = `
   DELETE FROM
     user
   WHERE
-    id = ${userId};`;
+    id = ${Id};`;
 
   await database.run(deleteUserQuery);
   response.send("User Deleted");
